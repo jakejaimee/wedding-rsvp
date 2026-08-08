@@ -523,13 +523,24 @@ function handleError(error) {
    ENTER KEY SEARCH
 ========================== */
 
+/* ==========================
+   PAGE INITIALIZATION
+========================== */
+
 document.addEventListener(
   "DOMContentLoaded",
   function() {
 
+    // Hide loading screen when the website opens
+    hideLoading();
+
+    // Make sure the search page is visible
+    showPage("searchPage");
+
+
+    // Enable Enter key for guest search
     const input =
       document.getElementById("guestName");
-
 
     if (input) {
 
