@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+    <title>Jake &amp; Jaimee Wedding RSVP</title>
+
+    <link
+        rel="preconnect"
+        href="https://fonts.googleapis.com">
+
+    <link
+        rel="preconnect"
+        href="https://fonts.gstatic.com"
+        crossorigin>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Great+Vibes&display=swap"
+        rel="stylesheet">
+
+    <link
+        rel="stylesheet"
+        href="style.css">
+
+</head>
+
+
+<body>
+
+
+<!-- ==========================
+     LOADING OVERLAY
+========================== -->
+
+<div
+    id="loadingOverlay"
+    class="loading-overlay">
+
+    <div class="loader"></div>
+
+    <p>Please wait...</p>
+
+</div>
+
+
+<!-- ==========================
+     SEARCH PAGE
+========================== -->
+
+<div
+    id="searchPage"
+    class="page active">
+
+    <div class="content-container">
+
+
+        <!-- MONOGRAM -->
+
+        <img
+            class="monogram"
+            src="https://raw.githubusercontent.com/jakejaimee/wedding-rsvp/main/monogram2.png"
+            alt="Jake and Jaimee">
+
+
+        <!-- COUPLE -->
+
+        <h1 class="couple-names">
+
+            Jake &amp; Jaimee
+
+        </h1>
+
+
+        <!-- INVITATION MESSAGE -->
+
+        <p class="italic-message">
+
+            Together with our families
+            <br>
+            joyfully invite you to celebrate our wedding
+
+        </p>
+
+
+        <p class="deadline-message">
+
+            <strong>
+                January 23, 2027
+            </strong>
+
+            <br>
+
+            Pan Resort and Events Place
+
+        </p>
+
+
+        <div class="section-divider"></div>
+
+
+        <!-- SEARCH -->
+
+        <div class="search-box">
+
+            <input
+                type="text"
+                id="guestName"
+                autocomplete="off"
+                placeholder="Enter your full name">
+
+            <button
+                onclick="searchGuest()">
+
+                FIND MY INVITATION
+
+            </button>
+
+        </div>
+
+
+        <div
+            id="searchError"
+            class="error-message">
+        </div>
+
+
+        <div class="important-note">
+
+            <p>
+
+                <strong>
+                    Every seat has been lovingly reserved.
+                </strong>
+
+            </p>
+
+            <p>
+
+                Kindly RSVP only for the number of seats
+                reserved under your invitation.
+
+            </p>
+
+            <p>
+
+                Unfortunately we are unable to accommodate
+                additional guests.
+
+            </p>
+
+            <p>
+
+                Thank you for celebrating with us.
+
+            </p>
+
+        </div>
+
+
+    </div>
+
+</div>
+
+
+<!-- ==========================
+     RSVP PAGE
+========================== -->
+
+<div
+    id="rsvpPage"
+    class="page">
+
+    <div class="content-container">
+
+
+        <!-- MONOGRAM -->
+
+        <img
+            class="monogram"
+            src="https://raw.githubusercontent.com/jakejaimee/wedding-rsvp/main/monogram2.png"
+            alt="Jake & Jaimee Monogram">
+
+
+        <!-- TITLE -->
+
+        <h2 class="welcome-title">
+
+            Welcome
+
+        </h2>
+
+
+        <!-- GUEST NAME -->
+
+        <div
+            id="displayGuestName"
+            class="guest-name-display">
+        </div>
+
+
+        <div class="section-divider"></div>
+
+
+        <!-- ATTENDANCE -->
+
+        <div class="form-group">
+
+            <label for="attendance">
+
+                Will you be joining us?
+
+            </label>
+
+
+            <select id="attendance">
+
+                <option value="">
+                    Please Select
+                </option>
+
+                <option value="Joyfully Accepts">
+                    Joyfully Accepts
+                </option>
+
+                <option value="Regretfully Declines">
+                    Regretfully Declines
+                </option>
+
+            </select>
+
+        </div>
+
+
+        <!-- RESERVED SEATS -->
+
+        <div class="reserved-seats-container">
+
+            <div class="seat-label">
+
+                Reserved Seats
+
+            </div>
+
+            <div
+                id="seatCount"
+                class="seat-count">
+
+                1
+
+            </div>
+
+        </div>
+
+
+        <!-- EMAIL -->
+
+        <div class="form-group">
+
+            <label for="email">
+
+                Email Address
+
+            </label>
+
+
+            <input
+                type="email"
+                id="email"
+                placeholder="example@email.com">
+
+        </div>
+
+
+        <!-- DYNAMIC GUEST FIELDS -->
+
+        <div id="guestFields">
+
+            <div class="guest-field">
+
+                <label>
+                    Guest 1
+                </label>
+
+                <input
+                    type="text"
+                    id="guest1"
+                    readonly>
+
+            </div>
+
+        </div>
+
+
+        <!-- HIDDEN GUEST ROW -->
+
+        <input
+            type="hidden"
+            id="sheetRow">
+
+
+        <!-- RSVP ERROR -->
+
+        <div
+            id="rsvpError"
+            class="error-message">
+        </div>
+
+
+        <!-- SUBMIT -->
+
+        <div class="button-group">
+
+            <button
+                class="primary-btn"
+                onclick="submitRSVP()">
+
+                CONFIRM RSVP
+
+            </button>
+
+        </div>
+
+
+        <div
+            style="
+                margin-top:40px;
+                font-size:18px;
+                line-height:1.8;
+                opacity:.85;
+            ">
+
+            We sincerely appreciate you taking the time
+            to respond.
+
+            <br>
+
+            Your RSVP helps us prepare for a beautiful
+            celebration with our loved ones.
+
+        </div>
+
+
+    </div>
+
+</div>
+
+
+<!-- ==========================
+     DUPLICATE RSVP PAGE
+========================== -->
+
+<div
+    id="duplicatePage"
+    class="page">
+
+    <div class="content-container">
+
+
+        <img
+            class="monogram"
+            src="https://raw.githubusercontent.com/jakejaimee/wedding-rsvp/main/monogram2.png"
+            alt="Jake & Jaimee Monogram">
+
+
+        <h2 class="duplicate-title">
+
+            RSVP Already Received
+
+        </h2>
+
+
+        <div class="section-divider"></div>
+
+
+        <p class="duplicate-message">
+
+            Thank you for taking the time to respond to our
+            invitation.
+
+            <br><br>
+
+            Our records indicate that we have already received
+            your RSVP.
+
+            <br><br>
+
+            If you need to update your response, kindly contact
+            Jake or Jaimee directly.
+
+        </p>
+
+
+        <button onclick="goHome()">
+
+            RETURN TO HOME
+
+        </button>
+
+
+    </div>
+
+</div>
+
+
+<!-- ==========================
+     SUCCESS PAGE
+========================== -->
+
+<div
+    id="successPage"
+    class="page">
+
+    <div class="content-container">
+
+        <div class="success-card">
+
+
+            <img
+                class="success-monogram"
+                src="https://raw.githubusercontent.com/jakejaimee/wedding-rsvp/main/monogram2.png"
+                alt="Jake & Jaimee Monogram">
+
+
+            <h2>
+
+                Thank You!
+
+            </h2>
+
+
+            <div class="section-divider"></div>
+
+
+            <div class="success-message">
+
+                <p>
+
+                    Your RSVP has been successfully received.
+
+                </p>
+
+
+                <p>
+
+                    We are truly grateful that you took the time
+                    to respond.
+
+                </p>
+
+
+                <p>
+
+                    We can't wait to celebrate this special day
+                    with you on
+
+                    <strong>
+                        January 23, 2027.
+                    </strong>
+
+                </p>
+
+            </div>
+
+
+            <button
+                class="primary-btn"
+                onclick="goHome()">
+
+                CLOSE RSVP
+
+            </button>
+
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script src="javascript.js"></script>
+
+</body>
+
+</html>
