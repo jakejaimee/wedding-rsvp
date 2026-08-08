@@ -1,33 +1,30 @@
-/* =====================================================
-   GOOGLE APPS SCRIPT BACKEND
-===================================================== */
+/* ==========================
+   GOOGLE APPS SCRIPT API
+========================== */
 
 const API_URL =
   "https://script.google.com/macros/s/AKfycbxuhshxNTc0bWdDXbVD-GjSpLuhD2PIWtXpJQKGxcLU004YX4GAI6OQL9ymkhM4qqcR/exec";
 
 
-/* =====================================================
+/* ==========================
    GLOBAL VARIABLES
-===================================================== */
+========================== */
 
 let currentGuest = null;
 let reservedSeats = 1;
 
 
-/* =====================================================
+/* ==========================
    PAGE NAVIGATION
-===================================================== */
+========================== */
 
 function showPage(pageId) {
 
   document
     .querySelectorAll(".page")
-    .forEach(page =>
-      page.classList.remove("active")
-    );
+    .forEach(page => page.classList.remove("active"));
 
-  const page =
-    document.getElementById(pageId);
+  const page = document.getElementById(pageId);
 
   if (page) {
     page.classList.add("active");
@@ -38,26 +35,13 @@ function showPage(pageId) {
 
 function goHome() {
 
-  const guestName =
-    document.getElementById("guestName");
+  const guestName = document.getElementById("guestName");
+  const searchError = document.getElementById("searchError");
+  const rsvpError = document.getElementById("rsvpError");
 
-  const searchError =
-    document.getElementById("searchError");
-
-  const rsvpError =
-    document.getElementById("rsvpError");
-
-  if (guestName) {
-    guestName.value = "";
-  }
-
-  if (searchError) {
-    searchError.innerHTML = "";
-  }
-
-  if (rsvpError) {
-    rsvpError.innerHTML = "";
-  }
+  if (guestName) guestName.value = "";
+  if (searchError) searchError.innerHTML = "";
+  if (rsvpError) rsvpError.innerHTML = "";
 
   currentGuest = null;
   reservedSeats = 1;
@@ -67,17 +51,17 @@ function goHome() {
 }
 
 
-/* =====================================================
+/* ==========================
    LOADING
-===================================================== */
+========================== */
 
 function showLoading() {
 
-  const overlay =
+  const loader =
     document.getElementById("loadingOverlay");
 
-  if (overlay) {
-    overlay.style.display = "flex";
+  if (loader) {
+    loader.style.display = "flex";
   }
 
 }
@@ -85,19 +69,19 @@ function showLoading() {
 
 function hideLoading() {
 
-  const overlay =
+  const loader =
     document.getElementById("loadingOverlay");
 
-  if (overlay) {
-    overlay.style.display = "none";
+  if (loader) {
+    loader.style.display = "none";
   }
 
 }
 
 
-/* =====================================================
-   JSONP HELPER
-===================================================== */
+/* ==========================
+   JSONP API CALL
+========================== */
 
 function callAPI(params, successCallback) {
 
@@ -108,7 +92,23 @@ function callAPI(params, successCallback) {
     Math.floor(Math.random() * 100000);
 
 
-  params.callback = callbackName;
+  window[callbackName] = function(result) {
+
+    try {
+
+      successCallback(result);
+
+    } finally {
+
+      delete window[callbackName];
+
+      if (script.parentNode) {
+        script.parentNode.removeChild(script);
+      }
+
+    }
+
+  };
 
 
   const query =
@@ -129,43 +129,27 @@ function callAPI(params, successCallback) {
     document.createElement("script");
 
 
-  window[callbackName] =
-    function(response) {
-
-      try {
-
-        successCallback(response);
-
-      } finally {
-
-        delete window[callbackName];
-
-        script.remove();
-
-      }
-
-    };
-
-
   script.src =
-    API_URL + "?" + query;
+    API_URL +
+    "?callback=" +
+    encodeURIComponent(callbackName) +
+    "&" +
+    query;
 
 
-  script.onerror =
-    function() {
+  script.onerror = function() {
 
-      delete window[callbackName];
+    delete window[callbackName];
 
-      script.remove();
+    if (script.parentNode) {
+      script.parentNode.removeChild(script);
+    }
 
-      hideLoading();
+    handleError({
+      message: "Unable to connect to the RSVP server."
+    });
 
-      handleError({
-        message:
-          "Unable to connect to the RSVP server."
-      });
-
-    };
+  };
 
 
   document.body.appendChild(script);
@@ -173,38 +157,30 @@ function callAPI(params, successCallback) {
 }
 
 
-/* =====================================================
+/* ==========================
    SEARCH GUEST
-===================================================== */
+========================== */
 
 function searchGuest() {
 
   const input =
     document.getElementById("guestName");
 
-  const guestName =
-    input
-      ? input.value.trim()
-      : "";
-
-
   const error =
     document.getElementById("searchError");
 
 
-  if (error) {
-    error.innerHTML = "";
-  }
+  const guestName =
+    input.value.trim();
+
+
+  error.innerHTML = "";
 
 
   if (!guestName) {
 
-    if (error) {
-
-      error.innerHTML =
-        "Please enter your full name.";
-
-    }
+    error.innerHTML =
+      "Please enter your full name.";
 
     return;
 
@@ -215,22 +191,19 @@ function searchGuest() {
 
 
   callAPI(
-
     {
       api: "findGuest",
       name: guestName
     },
-
     handleGuestSearch
-
   );
 
 }
 
 
-/* =====================================================
-   HANDLE SEARCH RESULT
-===================================================== */
+/* ==========================
+   HANDLE GUEST SEARCH
+========================== */
 
 function handleGuestSearch(result) {
 
@@ -239,15 +212,9 @@ function handleGuestSearch(result) {
 
   if (!result || !result.found) {
 
-    const error =
-      document.getElementById("searchError");
-
-    if (error) {
-
-      error.innerHTML =
-        "Sorry, we could not locate your invitation.";
-
-    }
+    document.getElementById("searchError")
+      .innerHTML =
+      "Sorry, we could not locate your invitation.";
 
     return;
 
@@ -282,20 +249,12 @@ function handleGuestSearch(result) {
   }
 
 
-  const displayName =
-    document.getElementById("displayGuestName");
-
-  if (displayName) {
-    displayName.innerHTML = result.name;
-  }
+  document.getElementById("displayGuestName")
+    .innerHTML = result.name;
 
 
-  const seatCount =
-    document.getElementById("seatCount");
-
-  if (seatCount) {
-    seatCount.innerHTML = result.seats;
-  }
+  document.getElementById("seatCount")
+    .innerHTML = result.seats;
 
 
   generateGuestFields();
@@ -306,9 +265,9 @@ function handleGuestSearch(result) {
 }
 
 
-/* =====================================================
+/* ==========================
    CREATE GUEST FIELDS
-===================================================== */
+========================== */
 
 function generateGuestFields() {
 
@@ -316,50 +275,14 @@ function generateGuestFields() {
     document.getElementById("guestFields");
 
 
-  if (!container) {
-    return;
-  }
+  if (!container) return;
 
 
   container.innerHTML = "";
 
 
-  // ==========================================
-  // GUEST 1
-  // ==========================================
-
-  const guest1 =
-    document.createElement("div");
-
-
-  guest1.className =
-    "guest-field";
-
-
-  guest1.innerHTML = `
-
-    <label>
-      Guest 1
-    </label>
-
-    <input
-      type="text"
-      id="guest1"
-      value="${escapeHTML(currentGuest.name)}"
-      readonly>
-
-  `;
-
-
-  container.appendChild(guest1);
-
-
-  // ==========================================
-  // ADDITIONAL GUESTS
-  // ==========================================
-
   for (
-    let i = 2;
+    let i = 1;
     i <= reservedSeats;
     i++
   ) {
@@ -368,22 +291,33 @@ function generateGuestFields() {
       document.createElement("div");
 
 
-    div.className =
-      "guest-field";
+    div.className = "guest-field";
 
 
-    div.innerHTML = `
+    if (i === 1) {
 
-      <label>
-        Guest ${i}
-      </label>
+      div.innerHTML = `
+        <label>Guest 1</label>
 
-      <input
-        type="text"
-        id="guest${i}"
-        placeholder="Enter guest name">
+        <input
+          type="text"
+          id="guest1"
+          value="${escapeHTML(currentGuest.name)}"
+          readonly>
+      `;
 
-    `;
+    } else {
+
+      div.innerHTML = `
+        <label>Guest ${i}</label>
+
+        <input
+          type="text"
+          id="guest${i}"
+          placeholder="Enter guest name">
+      `;
+
+    }
 
 
     container.appendChild(div);
@@ -393,87 +327,44 @@ function generateGuestFields() {
 }
 
 
-/* =====================================================
-   HTML ESCAPE
-===================================================== */
-
-function escapeHTML(value) {
-
-  return String(value)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-
-}
-
-
-/* =====================================================
+/* ==========================
    SUBMIT RSVP
-===================================================== */
+========================== */
 
 function submitRSVP() {
 
-  const attendanceElement =
-    document.getElementById("attendance");
+  const attendance =
+    document.getElementById("attendance")
+      .value;
 
 
-  const emailElement =
-    document.getElementById("email");
+  const email =
+    document.getElementById("email")
+      .value
+      .trim();
 
 
   const error =
     document.getElementById("rsvpError");
 
 
-  const attendance =
-    attendanceElement
-      ? attendanceElement.value
-      : "";
+  error.innerHTML = "";
 
-
-  const email =
-    emailElement
-      ? emailElement.value.trim()
-      : "";
-
-
-  if (error) {
-    error.innerHTML = "";
-  }
-
-
-  // ==========================================
-  // ATTENDANCE VALIDATION
-  // ==========================================
 
   if (!attendance) {
 
-    if (error) {
-
-      error.innerHTML =
-        "Please select your attendance.";
-
-    }
+    error.innerHTML =
+      "Please select your attendance.";
 
     return;
 
   }
 
 
-  // ==========================================
-  // EMAIL VALIDATION
-  // ==========================================
-
   if (!email) {
 
-    if (error) {
-
-      error.innerHTML =
-        "Please enter your email address.";
-
-    }
+    error.innerHTML =
+      "Please enter your email address.";
 
     return;
 
@@ -482,24 +373,12 @@ function submitRSVP() {
 
   if (!validateEmail(email)) {
 
-    if (error) {
-
-      error.innerHTML =
-        "Please enter a valid email address.";
-
-    }
+    error.innerHTML =
+      "Please enter a valid email address.";
 
     return;
 
   }
-
-
-  // ==========================================
-  // FORM DATA
-  // ==========================================
-
-  const rowElement =
-    document.getElementById("sheetRow");
 
 
   const formData = {
@@ -507,14 +386,10 @@ function submitRSVP() {
     api: "submitRSVP",
 
     row:
-      rowElement
-        ? rowElement.value
-        : "",
+      document.getElementById("sheetRow").value,
 
     name:
-      currentGuest
-        ? currentGuest.name
-        : "",
+      currentGuest.name,
 
     attendance:
       attendance,
@@ -525,171 +400,46 @@ function submitRSVP() {
   };
 
 
-  // ==========================================
-  // GUEST 2
-  // ==========================================
+  for (
+    let i = 2;
+    i <= reservedSeats;
+    i++
+  ) {
 
-  if (reservedSeats >= 2) {
-
-    const guest2Element =
-      document.getElementById("guest2");
-
-
-    const guest2 =
-      guest2Element
-        ? guest2Element.value.trim()
-        : "";
+    const field =
+      document.getElementById("guest" + i);
 
 
-    if (!guest2) {
+    if (!field || !field.value.trim()) {
 
-      if (error) {
-
-        error.innerHTML =
-          "Please provide the reserved guest name.";
-
-      }
+      error.innerHTML =
+        "Please complete all guest names.";
 
       return;
 
     }
 
 
-    formData.guest2 =
-      guest2;
+    formData["guest" + i] =
+      field.value.trim();
 
   }
 
-
-  // ==========================================
-  // GUEST 3
-  // ==========================================
-
-  if (reservedSeats >= 3) {
-
-    const guest3Element =
-      document.getElementById("guest3");
-
-
-    const guest3 =
-      guest3Element
-        ? guest3Element.value.trim()
-        : "";
-
-
-    if (!guest3) {
-
-      if (error) {
-
-        error.innerHTML =
-          "Please complete all guest names.";
-
-      }
-
-      return;
-
-    }
-
-
-    formData.guest3 =
-      guest3;
-
-  }
-
-
-  // ==========================================
-  // GUEST 4
-  // ==========================================
-
-  if (reservedSeats >= 4) {
-
-    const guest4Element =
-      document.getElementById("guest4");
-
-
-    const guest4 =
-      guest4Element
-        ? guest4Element.value.trim()
-        : "";
-
-
-    if (!guest4) {
-
-      if (error) {
-
-        error.innerHTML =
-          "Please complete all guest names.";
-
-      }
-
-      return;
-
-    }
-
-
-    formData.guest4 =
-      guest4;
-
-  }
-
-
-  // ==========================================
-  // GUEST 5
-  // ==========================================
-
-  if (reservedSeats >= 5) {
-
-    const guest5Element =
-      document.getElementById("guest5");
-
-
-    const guest5 =
-      guest5Element
-        ? guest5Element.value.trim()
-        : "";
-
-
-    if (!guest5) {
-
-      if (error) {
-
-        error.innerHTML =
-          "Please complete all guest names.";
-
-      }
-
-      return;
-
-    }
-
-
-    formData.guest5 =
-      guest5;
-
-  }
-
-
-  // ==========================================
-  // SUBMIT
-  // ==========================================
 
   showLoading();
 
 
   callAPI(
-
     formData,
-
     handleSubmission
-
   );
 
 }
 
 
-/* =====================================================
+/* ==========================
    SUBMISSION RESULT
-===================================================== */
+========================== */
 
 function handleSubmission(response) {
 
@@ -698,18 +448,11 @@ function handleSubmission(response) {
 
   if (!response || !response.success) {
 
-    const error =
-      document.getElementById("rsvpError");
-
-
-    if (error) {
-
-      error.innerHTML =
-        response && response.message
-          ? response.message
-          : "Unable to submit your RSVP.";
-
-    }
+    document.getElementById("rsvpError")
+      .innerHTML =
+      response && response.message
+        ? response.message
+        : "Unable to submit RSVP.";
 
     return;
 
@@ -721,43 +464,64 @@ function handleSubmission(response) {
 }
 
 
-/* =====================================================
+/* ==========================
    EMAIL VALIDATION
-===================================================== */
+========================== */
 
 function validateEmail(email) {
 
   const regex =
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-
   return regex.test(email);
 
 }
 
 
-/* =====================================================
+/* ==========================
+   HTML SAFETY
+========================== */
+
+function escapeHTML(text) {
+
+  return String(text)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+
+}
+
+
+/* ==========================
    GENERAL ERROR
-===================================================== */
+========================== */
 
 function handleError(error) {
 
   hideLoading();
 
-
   console.error(error);
 
 
-  alert(
-    "Something went wrong. Please try again."
-  );
+  const searchError =
+    document.getElementById("searchError");
+
+
+  if (searchError) {
+
+    searchError.innerHTML =
+      "Something went wrong while connecting to the RSVP server. Please try again.";
+
+  }
 
 }
 
 
-/* =====================================================
+/* ==========================
    ENTER KEY SEARCH
-===================================================== */
+========================== */
 
 document.addEventListener(
   "DOMContentLoaded",
