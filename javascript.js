@@ -12,6 +12,10 @@ const API_URL =
 
 let currentGuest = null;
 let reservedSeats = 1;
+let lastResponse = null;
+
+/* RSVP deadline used for the countdown on the search page */
+const RSVP_DEADLINE = "2026-11-28";
 
 
 /* ==========================
@@ -400,6 +404,9 @@ function submitRSVP() {
   };
 
 
+  const guestNames = [currentGuest.name];
+
+
   for (
     let i = 2;
     i <= reservedSeats;
@@ -423,7 +430,15 @@ function submitRSVP() {
     formData["guest" + i] =
       field.value.trim();
 
+    guestNames.push(field.value.trim());
+
   }
+
+
+  lastResponse = {
+    attendance: attendance,
+    guests: guestNames
+  };
 
 
   showLoading();
@@ -459,7 +474,167 @@ function handleSubmission(response) {
   }
 
 
+  renderSuccessSummary();
+
+
   showPage("successPage");
+
+}
+
+
+/* ==========================
+   SUCCESS SUMMARY
+========================== */
+
+function renderSuccessSummary() {
+
+  if (!lastResponse) return;
+
+
+  const guests = lastResponse.guests || [];
+
+  const attending =
+    String(lastResponse.attendance)
+      .toUpperCase()
+      .indexOf("ACCEPT") !== -1;
+
+
+  const going = attending ? guests.length : 0;
+
+
+  /* Headline count */
+
+  const countEl =
+    document.getElementById("successCount");
+
+  if (countEl) {
+
+    countEl.innerHTML =
+      attending
+        ? "Your RSVP has been recorded for <strong>" +
+          going +
+          "</strong> guest" +
+          (going === 1 ? "" : "s") +
+          "."
+        : "Your RSVP has been recorded.";
+
+  }
+
+
+  /* Attending tally */
+
+  const attendanceEl =
+    document.getElementById("summaryAttendance");
+
+  if (attendanceEl) {
+
+    attendanceEl.innerHTML =
+      attending
+        ? "<strong>" + going + "</strong> Attending"
+        : "Regretfully Declines";
+
+  }
+
+
+  /* Show the guest list only when attending */
+
+  const toggle = function(id, show) {
+
+    const el = document.getElementById(id);
+
+    if (el) {
+      el.style.display = show ? "" : "none";
+    }
+
+  };
+
+  toggle("summaryDivider", attending);
+  toggle("summaryGuestsTitle", attending);
+  toggle("summaryFootnote", attending);
+
+
+  /* Confirmed guest list */
+
+  const guestsEl =
+    document.getElementById("summaryGuests");
+
+  if (guestsEl) {
+
+    if (!attending) {
+
+      guestsEl.innerHTML =
+        '<p class="summary-declined">' +
+        "We will miss you on our special day. " +
+        "Thank you for letting us know." +
+        "</p>";
+
+    } else {
+
+      guestsEl.innerHTML =
+        guests
+          .map(function(name) {
+
+            return (
+              "<p>" +
+              '<span class="tick">&#10003;</span>' +
+              "<span>" + escapeHTML(name) + "</span>" +
+              "</p>"
+            );
+
+          })
+          .join("");
+
+    }
+
+  }
+
+}
+
+
+/* ==========================
+   RSVP COUNTDOWN
+========================== */
+
+function updateCountdown() {
+
+  const el =
+    document.getElementById("rsvpCountdown");
+
+  if (!el) return;
+
+
+  const now = new Date();
+
+  const deadline = new Date(RSVP_DEADLINE + "T23:59:59");
+
+
+  const msPerDay = 1000 * 60 * 60 * 24;
+
+  const days =
+    Math.ceil((deadline - now) / msPerDay);
+
+
+  if (days > 1) {
+
+    el.innerHTML =
+      "RSVP CLOSES IN " + days + " DAYS";
+
+  } else if (days === 1) {
+
+    el.innerHTML =
+      "RSVP CLOSES IN 1 DAY";
+
+  } else if (days === 0) {
+
+    el.innerHTML =
+      "RSVP CLOSES TODAY";
+
+  } else {
+
+    el.innerHTML =
+      "RSVP IS NOW CLOSED";
+
+  }
 
 }
 
@@ -536,6 +711,9 @@ document.addEventListener(
 
     // Make sure the search page is visible
     showPage("searchPage");
+
+    // Show the RSVP countdown
+    updateCountdown();
 
 
     // Enable Enter key for guest search
