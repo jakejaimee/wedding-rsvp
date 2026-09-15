@@ -463,6 +463,7 @@ button:active{
 
 
 .form-group input,
+.form-group textarea,
 .form-group select{
 
     width:100%;
@@ -487,6 +488,7 @@ button:active{
 
 
 .form-group input:focus,
+.form-group textarea:focus,
 .form-group select:focus{
 
     outline:none;
@@ -505,13 +507,35 @@ button:active{
 
 .reserved-seats-container{
 
-    margin:45px 0;
+    margin:20px 0 40px;
 
-    padding:30px;
+    padding:24px 30px;
 
     border-radius:24px;
 
     background:rgba(255,255,255,.60);
+
+}
+
+
+.rsvp-note{
+
+    margin:0 0 45px;
+
+}
+
+
+.subtitle-note{
+
+    font-family:'Cormorant Garamond',serif;
+
+    font-size:22px;
+
+    color:var(--text);
+
+    margin-top:18px;
+
+    margin-bottom:45px;
 
 }
 
@@ -1065,3 +1089,139 @@ button{
   END
 =====================================================*/
 
+
+
+/*====================================================
+  SUCCESS RESPONSE SUMMARY
+=====================================================*/
+
+.summary-box{
+
+    background:rgba(255,255,255,.78);
+
+    border:1px solid rgba(215,191,116,.45);
+
+    border-radius:26px;
+
+    padding:32px 28px;
+
+    margin:35px 0;
+
+    box-shadow:0 10px 35px rgba(0,0,0,.05);
+
+}
+
+
+.summary-title{
+
+    font-size:20px;
+
+    font-weight:600;
+
+    letter-spacing:2px;
+
+    text-transform:uppercase;
+
+    color:var(--heading);
+
+    margin-bottom:12px;
+
+}
+
+
+.summary-count{
+
+    font-size:22px;
+
+    color:var(--text);
+
+    margin-bottom:6px;
+
+}
+
+
+.summary-count strong{
+
+    font-size:26px;
+
+    color:var(--gold);
+
+}
+
+
+.summary-divider{
+
+    height:1px;
+
+    background:rgba(111,98,94,.25);
+
+    margin:26px 0;
+
+}
+
+
+.summary-guests{
+
+    text-align:left;
+
+    max-width:340px;
+
+    margin:0 auto;
+
+}
+
+
+.summary-guests p{
+
+    font-size:21px;
+
+    color:var(--text);
+
+    margin-bottom:10px;
+
+    display:flex;
+
+    gap:12px;
+
+    align-items:baseline;
+
+}
+
+
+.summary-guests .tick{
+
+    color:var(--gold);
+
+    font-weight:700;
+
+}
+
+
+.summary-declined{
+
+    font-size:21px;
+
+    color:var(--text);
+
+    line-height:1.7;
+
+}
+
+
+.summary-footnote{
+
+    margin-top:28px;
+
+    padding:16px 20px;
+
+    border-radius:18px;
+
+    background:rgba(215,191,116,.18);
+
+    font-size:18px;
+
+    line-height:1.6;
+
+    color:var(--text);
+
+}
