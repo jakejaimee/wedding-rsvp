@@ -26,7 +26,7 @@
 
     <link
         rel="stylesheet"
-        href="style.css">
+        href="style.css?v=2">
 
 </head>
 
@@ -64,7 +64,7 @@
 
         <img
             class="monogram"
-            src="https://raw.githubusercontent.com/jakejaimee/wedding-rsvp/main/monogram2.png"
+            src="monogram2.png"
             alt="Jake and Jaimee">
 
 
@@ -96,9 +96,37 @@
 
             <br>
 
-            Pan Resort and Events Place
+            2:30 PM
+
+            <br>
+
+            Pan Resort and Hotel
 
         </p>
+
+
+        <!-- DEADLINE NOTE -->
+
+        <div class="important-note">
+
+            <p>
+
+                Kindly RSVP by
+                <strong>
+                    November 28, 2026
+                </strong>,
+                as it will help us finalize our guest count
+                and make the necessary arrangements.
+
+            </p>
+
+            <p>
+
+                <strong id="rsvpCountdown"></strong>
+
+            </p>
+
+        </div>
 
 
         <div class="section-divider"></div>
@@ -130,39 +158,6 @@
         </div>
 
 
-        <div class="important-note">
-
-            <p>
-
-                <strong>
-                    Every seat has been lovingly reserved.
-                </strong>
-
-            </p>
-
-            <p>
-
-                Kindly RSVP only for the number of seats
-                reserved under your invitation.
-
-            </p>
-
-            <p>
-
-                Unfortunately we are unable to accommodate
-                additional guests.
-
-            </p>
-
-            <p>
-
-                Thank you for celebrating with us.
-
-            </p>
-
-        </div>
-
-
     </div>
 
 </div>
@@ -183,7 +178,7 @@
 
         <img
             class="monogram"
-            src="https://raw.githubusercontent.com/jakejaimee/wedding-rsvp/main/monogram2.png"
+            src="monogram2.png"
             alt="Jake & Jaimee Monogram">
 
 
@@ -206,6 +201,67 @@
 
         <div class="section-divider"></div>
 
+
+        <!-- RESERVED SEATS -->
+
+        <div class="reserved-seats-container">
+
+            <div
+                id="seatCount"
+                class="seat-count">
+
+                1
+
+            </div>
+
+            <div class="seat-label">
+
+                Reserved Seats
+
+            </div>
+
+        </div>
+
+
+        <!-- ACCOMMODATION NOTE -->
+
+        <div class="important-note rsvp-note">
+
+            <p>
+
+                <strong>
+                    Every seat has been lovingly reserved.
+                </strong>
+
+            </p>
+
+            <p>
+
+                Kindly note that only the number of seats
+                listed on this invitation will be accommodated.
+                We sincerely appreciate your understanding
+                and cooperation.
+
+            </p>
+
+        </div>
+
+        </br></br></br>
+        <!-- CONFIRM ATTENDANCE -->
+
+        <h2 class="welcome-title">
+
+            Confirm Attendance
+
+        </h2>
+
+        <p class="subtitle-note">
+
+            Enter the name of everyone who will be attending.
+
+        </p>
+
+        </br></br>
 
         <!-- ATTENDANCE -->
 
@@ -233,27 +289,6 @@
                 </option>
 
             </select>
-
-        </div>
-
-
-        <!-- RESERVED SEATS -->
-
-        <div class="reserved-seats-container">
-
-            <div class="seat-label">
-
-                Reserved Seats
-
-            </div>
-
-            <div
-                id="seatCount"
-                class="seat-count">
-
-                1
-
-            </div>
 
         </div>
 
@@ -320,7 +355,7 @@
                 class="primary-btn"
                 onclick="submitRSVP()">
 
-                CONFIRM RSVP
+                Confirm Response
 
             </button>
 
@@ -364,13 +399,13 @@
 
         <img
             class="monogram"
-            src="https://raw.githubusercontent.com/jakejaimee/wedding-rsvp/main/monogram2.png"
+            src="monogram2.png"
             alt="Jake & Jaimee Monogram">
 
 
         <h2 class="duplicate-title">
 
-            RSVP Already Received
+            RSVP Already Submitted
 
         </h2>
 
@@ -398,7 +433,7 @@
 
         <button onclick="goHome()">
 
-            RETURN TO HOME
+            Done
 
         </button>
 
@@ -423,7 +458,7 @@
 
             <img
                 class="success-monogram"
-                src="https://raw.githubusercontent.com/jakejaimee/wedding-rsvp/main/monogram2.png"
+                src="monogram2.png"
                 alt="Jake & Jaimee Monogram">
 
 
@@ -439,12 +474,55 @@
 
             <div class="success-message">
 
-                <p>
+                <p id="successCount">
 
-                    Your RSVP has been successfully received.
+                    Your RSVP has been recorded.
 
                 </p>
 
+            </div>
+
+
+            <!-- RESPONSE SUMMARY -->
+
+            <div class="summary-box">
+
+                <div class="summary-title">
+                    Your Response Summary
+                </div>
+
+                <div
+                    id="summaryAttendance"
+                    class="summary-count">
+                </div>
+
+                <div
+                    id="summaryDivider"
+                    class="summary-divider">
+                </div>
+
+                <div
+                    id="summaryGuestsTitle"
+                    class="summary-title">
+                    Guest Attendance
+                </div>
+
+                <div
+                    id="summaryGuests"
+                    class="summary-guests">
+                </div>
+
+                <div
+                    id="summaryFootnote"
+                    class="summary-footnote">
+                    Your final RSVP includes only the guests
+                    listed above.
+                </div>
+
+            </div>
+
+
+            <div class="success-message">
 
                 <p>
 
@@ -472,7 +550,7 @@
                 class="primary-btn"
                 onclick="goHome()">
 
-                CLOSE RSVP
+                Done
 
             </button>
 
@@ -484,7 +562,7 @@
 </div>
 
 
-<script src="javascript.js"></script>
+<script src="javascript.js?v=2"></script>
 
 </body>
 
