@@ -542,7 +542,7 @@ button:active{
 
 .seat-label{
 
-    font-size:22px;
+    font-size:150px;
 
     color:var(--heading);
 
@@ -553,7 +553,7 @@ button:active{
 
 .seat-count{
 
-    font-size:150px;
+    font-size:200px;
 
     font-weight:700;
 
