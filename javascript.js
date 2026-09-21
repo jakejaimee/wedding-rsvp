@@ -2,8 +2,11 @@
    GOOGLE APPS SCRIPT API
 ========================== */
 
+/* Requests go through our own HTTPS proxy (server-side) instead of calling
+   script.google.com directly from the browser. This avoids ad-blocker /
+   privacy filters that blocked the Google script on some devices. */
 const API_URL =
-  "https://script.google.com/macros/s/AKfycbxuhshxNTc0bWdDXbVD-GjSpLuhD2PIWtXpJQKGxcLU004YX4GAI6OQL9ymkhM4qqcR/exec";
+  "https://154-90-32-20.nip.io/jj/proxy.php";
 
 
 /* ==========================
@@ -89,32 +92,6 @@ function hideLoading() {
 
 function callAPI(params, successCallback) {
 
-  const callbackName =
-    "jsonpCallback_" +
-    Date.now() +
-    "_" +
-    Math.floor(Math.random() * 100000);
-
-
-  window[callbackName] = function(result) {
-
-    try {
-
-      successCallback(result);
-
-    } finally {
-
-      delete window[callbackName];
-
-      if (script.parentNode) {
-        script.parentNode.removeChild(script);
-      }
-
-    }
-
-  };
-
-
   const query =
     Object.keys(params)
       .map(function(key) {
@@ -129,34 +106,31 @@ function callAPI(params, successCallback) {
       .join("&");
 
 
-  const script =
-    document.createElement("script");
+  fetch(API_URL + "?" + query, { method: "GET", cache: "no-store" })
 
+    .then(function(response) {
 
-  script.src =
-    API_URL +
-    "?callback=" +
-    encodeURIComponent(callbackName) +
-    "&" +
-    query;
+      if (!response.ok) {
+        throw new Error("HTTP " + response.status);
+      }
 
+      return response.json();
 
-  script.onerror = function() {
+    })
 
-    delete window[callbackName];
+    .then(function(result) {
 
-    if (script.parentNode) {
-      script.parentNode.removeChild(script);
-    }
+      successCallback(result);
 
-    handleError({
-      message: "Unable to connect to the RSVP server."
+    })
+
+    .catch(function(err) {
+
+      handleError({
+        message: "Unable to connect to the RSVP server."
+      });
+
     });
-
-  };
-
-
-  document.body.appendChild(script);
 
 }
 
