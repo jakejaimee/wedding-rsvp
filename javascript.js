@@ -18,7 +18,7 @@ let reservedSeats = 1;
 let lastResponse = null;
 
 /* RSVP deadline used for the countdown on the search page */
-const RSVP_DEADLINE = "2026-12-07";
+const RSVP_DEADLINE = "2026-12-18";
 
 
 /* ==========================
