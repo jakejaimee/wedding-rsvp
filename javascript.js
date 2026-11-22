@@ -2,11 +2,24 @@
    GOOGLE APPS SCRIPT API
 ========================== */
 
-/* Requests go through our own HTTPS proxy (server-side) instead of calling
-   script.google.com directly from the browser. This avoids ad-blocker /
-   privacy filters that blocked the Google script on some devices. */
+/* Requests go through our own HTTPS proxy first. It avoids ad-blocker /
+   privacy filters that block script.google.com on some devices.
+
+   If the proxy does not answer within PROXY_TIMEOUT_MS, or fails outright,
+   the request falls back to calling the Apps Script directly (JSONP), so
+   guests can still RSVP while the proxy server is down. */
 const API_URL =
   "https://154-90-32-20.nip.io/jj/proxy.php";
+
+const GAS_URL =
+  "https://script.google.com/macros/s/AKfycbxuhshxNTc0bWdDXbVD-GjSpLuhD2PIWtXpJQKGxcLU004YX4GAI6OQL9ymkhM4qqcR/exec";
+
+const PROXY_TIMEOUT_MS  = 8000;
+const DIRECT_TIMEOUT_MS = 20000;
+
+/* Once the proxy has failed on this page, skip it for the rest of the visit
+   so the guest does not wait out the timeout twice (search, then submit). */
+let proxyDown = false;
 
 
 /* ==========================
@@ -87,26 +100,107 @@ function hideLoading() {
 
 
 /* ==========================
-   JSONP API CALL
+   API CALL (proxy first, direct fallback)
 ========================== */
+
+function buildQuery(params) {
+
+  return Object.keys(params)
+    .map(function(key) {
+
+      return (
+        encodeURIComponent(key) +
+        "=" +
+        encodeURIComponent(params[key])
+      );
+
+    })
+    .join("&");
+
+}
+
 
 function callAPI(params, successCallback) {
 
-  const query =
-    Object.keys(params)
-      .map(function(key) {
+  const query = buildQuery(params);
 
-        return (
-          encodeURIComponent(key) +
-          "=" +
-          encodeURIComponent(params[key])
-        );
+  let finished = false;
 
-      })
-      .join("&");
+  function finish(result) {
+
+    if (finished) return;
+    finished = true;
+    successCallback(result);
+
+  }
+
+  function fail() {
+
+    if (finished) return;
+    finished = true;
+    handleError({
+      message: "Unable to connect to the RSVP server."
+    });
+
+  }
 
 
-  fetch(API_URL + "?" + query, { method: "GET", cache: "no-store" })
+  /* Direct call to Apps Script.
+     proxyTimedOut: the proxy may have forwarded this request before
+     going quiet. For a submit, the sheet could then already hold this
+     RSVP, and the retry would answer "already submitted". In that one
+     case the RSVP is saved, so report success instead of an error. */
+
+  function goDirect(proxyTimedOut) {
+
+    callDirect(query, function(result) {
+
+      if (
+        proxyTimedOut &&
+        params.api === "submitRSVP" &&
+        result &&
+        !result.success &&
+        /already submitted/i.test(String(result.message || ""))
+      ) {
+        result = { success: true };
+      }
+
+      finish(result);
+
+    }, fail);
+
+  }
+
+
+  if (proxyDown) {
+
+    goDirect(false);
+    return;
+
+  }
+
+
+  const controller =
+    typeof AbortController !== "undefined" ? new AbortController() : null;
+
+  let timedOut = false;
+
+  const timer = setTimeout(function() {
+
+    timedOut = true;
+    if (controller) controller.abort();
+
+    proxyDown = true;
+    goDirect(true);
+
+  }, PROXY_TIMEOUT_MS);
+
+
+  fetch(API_URL + "?" + query, {
+    method: "GET",
+    cache: "no-store",
+    signal: controller ? controller.signal : undefined
+  })
 
     .then(function(response) {
 
@@ -120,17 +214,88 @@ function callAPI(params, successCallback) {
 
     .then(function(result) {
 
-      successCallback(result);
+      if (timedOut) return;
+      clearTimeout(timer);
+      finish(result);
 
     })
 
-    .catch(function(err) {
+    .catch(function() {
 
-      handleError({
-        message: "Unable to connect to the RSVP server."
-      });
+      if (timedOut) return;
+      clearTimeout(timer);
+
+      proxyDown = true;
+      goDirect(false);
 
     });
+
+}
+
+
+/* JSONP request straight to the Apps Script, with its own timeout. */
+
+function callDirect(query, onResult, onFail) {
+
+  const callbackName =
+    "jsonpCallback_" +
+    Date.now() +
+    "_" +
+    Math.floor(Math.random() * 100000);
+
+  const script = document.createElement("script");
+
+  let done = false;
+
+  function cleanup() {
+
+    clearTimeout(timer);
+
+    /* Leave a no-op behind: a late reply must not throw. */
+    window[callbackName] = function() {};
+
+    if (script.parentNode) {
+      script.parentNode.removeChild(script);
+    }
+
+  }
+
+  const timer = setTimeout(function() {
+
+    if (done) return;
+    done = true;
+    cleanup();
+    onFail();
+
+  }, DIRECT_TIMEOUT_MS);
+
+
+  window[callbackName] = function(result) {
+
+    if (done) return;
+    done = true;
+    cleanup();
+    onResult(result);
+
+  };
+
+  script.onerror = function() {
+
+    if (done) return;
+    done = true;
+    cleanup();
+    onFail();
+
+  };
+
+  script.src =
+    GAS_URL +
+    "?callback=" +
+    encodeURIComponent(callbackName) +
+    "&" +
+    query;
+
+  document.body.appendChild(script);
 
 }
 
